@@ -215,16 +215,33 @@
             cursor: grabbing;
         }
 
+        /* BOTÓN DE CIERRE MEJORADO CON ÁREA TÁCTIL MÁS GRANDE */
         .close-btn {
             position: absolute;
             top: 15px;
             right: 20px;
             color: #ffffff;
-            font-size: 36px;
+            font-size: 32px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 1001;
-            line-height: 1;
+            z-index: 1010;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
+            user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .close-btn:hover, .close-btn:active {
+            background-color: rgba(255, 255, 255, 0.35);
+            transform: scale(1.08);
         }
 
         footer {
@@ -251,7 +268,7 @@
 
     <!-- MODAL VISOR -->
     <div id="imageModal" class="modal" onclick="closeModal(event)">
-        <span class="close-btn" onclick="forceCloseModal()">&times;</span>
+        <span class="close-btn" onclick="forceCloseModal(event)">&times;</span>
         <img id="modalImage" class="modal-img" src="" alt="Vista previa">
     </div>
 
@@ -269,6 +286,12 @@
             { nombre: "Body Deportivo", marca: "Andrea", color: "Vino", imagen: "Body deportivo marca andrea color vino.jpg" },
             { nombre: "Brasieres", marca: "Brenda", color: "Variados", imagen: "Brasieres 1.png" },
             { nombre: "Brasieres", marca: "Brenda", color: "Negro,Blanco,Beige", imagen: "Brasieres 2.png" },
+            { nombre: "Calzón", marca: "Hot Love", color: "Rojo", imagen: "Calzón Marca Hot Love color Rojo.png" },
+            { nombre: "Calzón", marca: "Hot Love", color: "Palo Rosa", imagen: "Calzón Marca Hot Love,color palo rosa .png" },
+            { nombre: "Calzón", marca: "Dania", color: "Celeste", imagen: "Calzón marca Dania color celeste.png" },
+            { nombre: "Calzón", marca: "Dania", color: "Negro con Rosado", imagen: "Calzón marca Dania,color negro con rosado.png" },
+            { nombre: "Conjunto", marca: "Dania", color: "Gris", imagen: "Conjunto color gris Marca Dania.png" },
+            { nombre: "Conjunto Deportivo", marca: "Brenda Gym", color: "Negro", imagen: "conjuto marca Brenda Gym color negro.png" },
             { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Rosado", imagen: "Conjungo de dama marca Chic Infinite color Rosado.png" },
             { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Azul Claro", imagen: "Conjunto De Dama marca chic infinite color azul claro.jpg" },
             { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Beige", imagen: "Conjunto De Dama marca chic infinite color beige.jpg" },
@@ -281,6 +304,7 @@
             { nombre: "Enterizo", marca: "Andrea", color: "Vino", imagen: "Enterizo Vino Marca Andrea.jpg" },
             { nombre: "Enterizo", marca: "Andrea", color: "Gris", imagen: "Enterizo gris Marca Andrea.jpg" },
             { nombre: "Enterizo", marca: "Andrea", color: "Negro", imagen: "Enterizo negro Marca Andrea.jpg" },
+            { nombre: "Enterizo", marca: "Dania", color: "Rosado", imagen: "Enterizo color rosado Marca Dania.png" },
             { nombre: "Licra Deportiva", marca: "Ania", color: "Azul Oscuro", imagen: "Licra DeportivaAzul oscuro Marca Ania.jpg" },
             { nombre: "Licra Deportiva", marca: "Ania", color: "Rosado", imagen: "Licra Deportiva Rosada Marca Ania.jpg" },
             { nombre: "Licra", marca: "Georgina", color: "Negro", imagen: "Licra Negra Marca Georgina.png" },
@@ -322,7 +346,8 @@
             { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Negro", imagen: "Pijama short y blusa de dama marca silla color negro.jpg" },
             { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Palo Rosa", imagen: "Pijama short y blusa de dama marca silla color palo rosa.jpg" },
             { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Terracota", imagen: "Pijama short y blusa de dama marca silla color terracota.jpg" },
-            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Uva", imagen: "Pijama short y blusa de dama marca silla color uva.jpg" }
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Uva", imagen: "Pijama short y blusa de dama marca silla color uva.jpg" },
+            { nombre: "Top", marca: "Innocent", color: "Rosado", imagen: "Top ,Marca Innocent,color rosado.png" }
         ];
 
         // RENDERIZAR TARJETAS
@@ -379,13 +404,17 @@
             document.body.style.overflow = 'hidden';
         }
 
-        function forceCloseModal() {
+        function forceCloseModal(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
         function closeModal(e) {
-            if (e.target === modal) forceCloseModal();
+            if (e.target === modal) forceCloseModal(e);
         }
 
         function resetTransform() {
@@ -413,7 +442,7 @@
             modalImg.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
         }
 
-        // DOBLE TAP / CLIC PARA ZOOM DE CONTROLADO
+        // DOBLE TAP / CLIC PARA ZOOM CONTROLADO
         modalImg.addEventListener('click', () => {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
@@ -497,7 +526,7 @@
         window.addEventListener('touchend', handleEnd);
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') forceCloseModal();
+            if (e.key === 'Escape') forceCloseModal(e);
         });
     </script>
 </body>
