@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo</title>
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --card-bg: #0d0d0d;
+            --border-white: #ffffff;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+
+        /* HEADER RESPONSIVO UNIVERSAL */
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px 25px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 25px;
+            text-align: center;
+            width: 100%;
+        }
+
+        h1.catalog-title {
+            font-family: 'Georgia', serif;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: clamp(2px, 1vw, 6px);
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .search-bar {
+            width: 100%;
+            max-width: 450px;
+            padding: 0 10px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #000000;
+            border: 2px solid var(--border-white);
+            border-radius: 30px;
+            color: #ffffff;
+            outline: none;
+            text-align: center;
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-bar input:focus {
+            background-color: #111111;
+            box-shadow: 0 0 18px rgba(255, 255, 255, 0.35);
+        }
+
+        /* GRID RESPONSIVO UNIVERSAL */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+                gap: 25px;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid #222222;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: left;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #ffffff;
+            box-shadow: 0 8px 22px rgba(255, 255, 255, 0.2);
+        }
+
+        /* BORDES BLANCOS EN IMÁGENES */
+        .img-box {
+            width: 100%;
+            height: 280px;
+            background-color: #000000;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 2px solid var(--border-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .img-box img {
+            transform: scale(1.05);
+        }
+
+        /* INFORMACIÓN ESTÉTICA DEL PRODUCTO */
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 2px;
+        }
+
+        .product-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.3;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .product-detail {
+            font-size: 0.82rem;
+            color: #dddddd;
+            line-height: 1.3;
+        }
+
+        .product-detail .label {
+            font-weight: 600;
+            color: #ffffff;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* MODAL VISOR RESPONSIVO */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.96);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-img {
+            max-width: 90vw;
+            max-height: 82vh;
+            object-fit: contain;
+            cursor: grab;
+            border-radius: 8px;
+            border: 2px solid var(--border-white);
+            user-select: none;
+            -webkit-user-drag: none;
+            will-change: transform;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.25);
+        }
+
+        .modal-img:active {
+            cursor: grabbing;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            line-height: 1;
+        }
+
+        footer {
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="catalog-title">Catálogo</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="Buscar prenda, marca o color...">
+        </div>
+    </header>
+
+    <div class="grid" id="catalogGrid"></div>
+
+    <!-- MODAL VISOR -->
+    <div id="imageModal" class="modal" onclick="closeModal(event)">
+        <span class="close-btn" onclick="forceCloseModal()">&times;</span>
+        <img id="modalImage" class="modal-img" src="" alt="Vista previa">
+    </div>
+
+    <footer>
+        <p>&copy; Catálogo</p>
+    </footer>
+
+    <script>
+        // DATOS ORGANIZADOS ESTÉTICAMENTE
+        const productos = [
+            { nombre: "Body Deportivo", marca: "Andrea", color: "Verde", imagen: "Body deportivo marca andrea color Grede.jpg" },
+            { nombre: "Body Deportivo", marca: "Andrea", color: "Royal Blue", imagen: "Body deportivo marca andrea color Rogal blue.jpg" },
+            { nombre: "Body Deportivo", marca: "Andrea", color: "Azul Oscuro", imagen: "Body deportivo marca andrea color azul oscuro.jpg" },
+            { nombre: "Body Deportivo", marca: "Andrea", color: "Rosado", imagen: "Body deportivo marca andrea color rosado.jpg" },
+            { nombre: "Body Deportivo", marca: "Andrea", color: "Vino", imagen: "Body deportivo marca andrea color vino.jpg" },
+            { nombre: "Brasieres", marca: "Brenda", color: "Variados", imagen: "Brasieres 1.png" },
+            { nombre: "Brasieres", marca: "Brenda", color: "Negro,Blanco,Beige", imagen: "Brasieres 2.png" },
+            { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Rosado", imagen: "Conjungo de dama marca Chic Infinite color Rosado.png" },
+            { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Azul Claro", imagen: "Conjunto De Dama marca chic infinite color azul claro.jpg" },
+            { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Beige", imagen: "Conjunto De Dama marca chic infinite color beige.jpg" },
+            { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Café", imagen: "Conjunto De Dama marca chic infinite color cafe.jpg" },
+            { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Negro", imagen: "Conjunto De Dama marca chic infinite color negro.jpg" },
+            { nombre: "Conjunto de Dama", marca: "Chic Infinite", color: "Vino", imagen: "Conjunto De Dama marca chic infinite color vino.jpg" },
+            { nombre: "Conjunto de Pijama", marca: "Dania", color: "Variado", imagen: "Conjunto de Pijama Unicornio.png" },
+            { nombre: "Enterizo", marca: "Andrea", color: "Azul", imagen: "Enterizo Azul Marca Andrea.jpg" },
+            { nombre: "Enterizo", marca: "Andrea", color: "Celeste", imagen: "Enterizo Celeste Marca Andrea.jpg" },
+            { nombre: "Enterizo", marca: "Andrea", color: "Vino", imagen: "Enterizo Vino Marca Andrea.jpg" },
+            { nombre: "Enterizo", marca: "Andrea", color: "Gris", imagen: "Enterizo gris Marca Andrea.jpg" },
+            { nombre: "Enterizo", marca: "Andrea", color: "Negro", imagen: "Enterizo negro Marca Andrea.jpg" },
+            { nombre: "Licra Deportiva", marca: "Ania", color: "Azul Oscuro", imagen: "Licra DeportivaAzul oscuro Marca Ania.jpg" },
+            { nombre: "Licra Deportiva", marca: "Ania", color: "Rosado", imagen: "Licra Deportiva Rosada Marca Ania.jpg" },
+            { nombre: "Licra", marca: "Georgina", color: "Negro", imagen: "Licra Negra Marca Georgina.png" },
+            { nombre: "Licra Deportiva", marca: "Ania", color: "Azul Rey", imagen: "Licra deportiva Azul Rey Marca Ania.jpg" },
+            { nombre: "Licra Deportiva", marca: "Ania", color: "Gris", imagen: "Licra deportiva gris marca Ania.jpg" },
+            { nombre: "Licra Deportiva", marca: "Brenda Gym", color: "Vino", imagen: "Licra deportiva marca Brenda Gym color vino.jpg" },
+            { nombre: "Licra Deportiva", marca: "Dania", color: "Rosado", imagen: "Licra deportiva marca Dania Rosada.jpg" },
+            { nombre: "Licra Deportiva", marca: "Dania", color: "Vino", imagen: "Licra deportiva marca Dania Vino.jpg" },
+            { nombre: "Licra Deportiva", marca: "Dania", color: "Azul", imagen: "Licra deportiva marca Dania azul.jpg" },
+            { nombre: "Licra Deportiva", marca: "Dania", color: "Gris Oscuro", imagen: "Licra deportiva marca Dania gris oscuro.jpg" },
+            { nombre: "Licra Deportiva", marca: "Dania", color: "Verde Olivo", imagen: "Licra deportiva marca Dania verde olivo.jpg" },
+            { nombre: "Licra Deportiva", marca: "Dania", color: "Gris", imagen: "licra deportiva marca Dania gris.jpg" },
+            { nombre: "Licra Deportiva", marca: "Ania", color: "Verde", imagen: "Licra deportiva verde marca Ania.jpg" },
+            { nombre: "Licra Deportiva", marca: "Ania", color: "Vino", imagen: "Licra deportiva vino marca Ania.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Azul Rey", imagen: "Licra larga Deportiva marca andrea color azul rey.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Azul Oscuro", imagen: "Licra larga deportiva marca andrea color azul oscuro.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Gris", imagen: "Licra larga deportiva marca andrea color gris.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Negro", imagen: "Licra larga deportiva marca andrea color negro.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Rosado", imagen: "Licra larga deportiva marca andrea color rosado.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Verde", imagen: "Licra larga deportiva marca andrea color verde.jpg" },
+            { nombre: "Licra Larga Deportiva", marca: "Andrea", color: "Vino", imagen: "Licra larga deportiva marca andrea color vino.jpg" },
+            { nombre: "Licra", marca: "Brenda Gym", color: "Azul", imagen: "Licra marca Brenda Gym color azul.png" },
+            { nombre: "Licra", marca: "Brenda Gym", color: "Gris", imagen: "Licra marca Brenda Gym color gris.jpg" },
+            { nombre: "Licra", marca: "Brenda Gym", color: "Negro", imagen: "Licra marca Brenda Gym color negro.png" },
+            { nombre: "Licra", marca: "Brenda Gym", color: "Rosado", imagen: "Licra marca Brenda Gym color rosado.jpg" },
+            { nombre: "Licra", marca: "Lira", color: "Negro", imagen: "Licra negra marca Lira.jpg" },
+            { nombre: "Conjunto Deportivo", marca: "Innocent", color: "Azul Marino", imagen: "Marca Innocent color azul marino.jpg" },
+            { nombre: "Conjunto Deportivo", marca: "Innocent", color: "Gris", imagen: "Marca Innocent color gris.jpg" },
+            { nombre: "Conjunto Deportivo", marca: "Innocent", color: "Gris Oscuro", imagen: "Marca Innocent color gris oscuro.jpg" },
+            { nombre: "Conjunto Deportivo", marca: "Innocent", color: "Negro", imagen: "Marca Innocent color negro.jpg" },
+            { nombre: "Medias Clásicas", marca: "Terko, Elegant Basic", color: "Variado", imagen: "Medias.png" },
+            { nombre: "Medias con Dibujos", marca: "Brenda,2Good,Dania", color: "Variado", imagen: "Medias con Dibujos.png" },
+            { nombre: "Pantaloneta", marca: "Jhon Fox", color: "Blanco", imagen: "PantalonetaJhon Fox Blanca.png" },
+            { nombre: "Pantaloneta", marca: "Jhon Fox", color: "Negro con Blanco", imagen: "Pantaloneta Jhon Fox Negra con blanco.png" },
+            { nombre: "Pantaloneta", marca: "Jhon Fox", color: "Negro con Rosado", imagen: "pantaloneta jhon fox negra con rosado.png" },
+            { nombre: "Pantaloneta con Licra", marca: "Expedition", color: "Negro", imagen: "Pantaloneta Negra con licra.png" },
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Azul Cielo", imagen: "Pijama short y blusa de dama marca silla color azul cielo.jpg" },
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Azul Marino", imagen: "Pijama short y blusa de dama marca silla color azul marino.jpg" },
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Negro", imagen: "Pijama short y blusa de dama marca silla color negro.jpg" },
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Palo Rosa", imagen: "Pijama short y blusa de dama marca silla color palo rosa.jpg" },
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Terracota", imagen: "Pijama short y blusa de dama marca silla color terracota.jpg" },
+            { nombre: "Pijama Short y Blusa", marca: "Silla", color: "Uva", imagen: "Pijama short y blusa de dama marca silla color uva.jpg" }
+        ];
+
+        // RENDERIZAR TARJETAS
+        function cargarProductos() {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = productos.map(p => {
+                return `
+                    <div class="card" onclick="openModal('${p.imagen}')">
+                        <div class="img-box">
+                            <img src="${p.imagen}" alt="${p.nombre}">
+                        </div>
+                        <div class="card-info">
+                            <div class="product-name">${p.nombre}</div>
+                            <div class="product-detail"><span class="label">Marca:</span> ${p.marca}</div>
+                            <div class="product-detail"><span class="label">Color:</span> ${p.color}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        cargarProductos();
+
+        // FILTRO DE BÚSQUEDA GLOBAL
+        function filterProducts() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('card');
+
+            for (let i = 0; i < cards.length; i++) {
+                let cardText = cards[i].innerText.toLowerCase();
+                if (cardText.includes(input)) {
+                    cards[i].style.display = "flex";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        // VISOR MODAL CON CONTROL FLUIDO DE ZOOM Y DESPLAZAMIENTO
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+
+        let scale = 1, posX = 0, posY = 0;
+        let startX = 0, startY = 0;
+        let isDragging = false;
+        let initialPinchDistance = null;
+        let startScale = 1;
+        let lastTap = 0;
+
+        function openModal(imgSrc) {
+            modalImg.src = imgSrc;
+            modal.classList.add('active');
+            resetTransform();
+            document.body.style.overflow = 'hidden';
+        }
+
+        function forceCloseModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function closeModal(e) {
+            if (e.target === modal) forceCloseModal();
+        }
+
+        function resetTransform() {
+            scale = 1; posX = 0; posY = 0;
+            updateTransform(true);
+        }
+
+        // LIMITAR EL DESPLAZAMIENTO PARA QUE NO SE SALGA DE LA PANTALLA
+        function clampBounds() {
+            if (scale <= 1) {
+                posX = 0;
+                posY = 0;
+                return;
+            }
+            const maxTx = (modalImg.offsetWidth * (scale - 1)) / 2;
+            const maxTy = (modalImg.offsetHeight * (scale - 1)) / 2;
+
+            posX = Math.min(Math.max(posX, -maxTx), maxTx);
+            posY = Math.min(Math.max(posY, -maxTy), maxTy);
+        }
+
+        function updateTransform(smooth = false) {
+            clampBounds();
+            modalImg.style.transition = smooth ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
+            modalImg.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+        }
+
+        // DOBLE TAP / CLIC PARA ZOOM DE CONTROLADO
+        modalImg.addEventListener('click', () => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                if (scale > 1) {
+                    resetTransform();
+                } else {
+                    scale = 2.2;
+                    posX = 0;
+                    posY = 0;
+                    updateTransform(true);
+                }
+            }
+            lastTap = currentTime;
+        });
+
+        // ZOOM CON RUEDA DEL MOUSE
+        modal.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.2 : -0.2;
+            const newScale = Math.min(Math.max(1, scale + delta), 4);
+            if (newScale !== scale) {
+                scale = newScale;
+                updateTransform(true);
+            }
+        }, { passive: false });
+
+        // MANEJO DE GESTOS TÁCTILES Y MOUSE (PAN/ZOOM)
+        function handleStart(e) {
+            if (e.touches && e.touches.length === 2) {
+                isDragging = false;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                startScale = scale;
+            } else if ((e.touches && e.touches.length === 1 && scale > 1) || (e.type === 'mousedown' && scale > 1)) {
+                isDragging = true;
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                startX = clientX - posX;
+                startY = clientY - posY;
+            }
+        }
+
+        function handleMove(e) {
+            if (e.touches && e.touches.length === 2 && initialPinchDistance) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const factor = currentDistance / initialPinchDistance;
+                scale = Math.min(Math.max(1, startScale * factor), 4);
+                updateTransform(false);
+            } else if (isDragging && scale > 1) {
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                if (clientX !== undefined && clientY !== undefined) {
+                    posX = clientX - startX;
+                    posY = clientY - startY;
+                    updateTransform(false);
+                }
+            }
+        }
+
+        function handleEnd(e) {
+            if (e.touches && e.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+            if (!e.touches || e.touches.length === 0) {
+                isDragging = false;
+                if (scale > 1) updateTransform(true);
+            }
+        }
+
+        modalImg.addEventListener('mousedown', handleStart);
+        modalImg.addEventListener('touchstart', handleStart, { passive: true });
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: true });
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchend', handleEnd);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') forceCloseModal();
+        });
+    </script>
+</body>
+</html>
